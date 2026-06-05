@@ -23,6 +23,7 @@ export function Navbar() {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { cart, wishlist, theme, toggleTheme, notifications, markAllRead } = useStore();
   const [q, setQ] = useState("");
+  const [mobileOpen, setMobileOpen] = useState(false); // ← controls Sheet
   const unread = notifications.filter((n) => !n.read).length;
 
   useEffect(() => {
@@ -36,21 +37,38 @@ export function Navbar() {
     navigate({ to: "/products", search: { q } as never });
   };
 
+  // Close the mobile sheet and then navigate
+  const handleMobileNav = () => {
+    setMobileOpen(false);
+  };
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/60 backdrop-blur-xl bg-background/80">
       <div className="container mx-auto flex h-16 items-center gap-3 px-4">
-        <Sheet>
+        {/* Mobile Sheet — controlled via `open` + `onOpenChange` */}
+        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="md:hidden"><Menu className="h-5 w-5" /></Button>
+            <Button variant="ghost" size="icon" className="md:hidden">
+              <Menu className="h-5 w-5" />
+            </Button>
           </SheetTrigger>
           <SheetContent side="left" className="w-72">
             <div className="mt-8 flex flex-col gap-1">
               {navLinks.map((l) => (
-                <Link key={l.to} to={l.to} className="flex items-center gap-3 rounded-md px-3 py-2 hover:bg-muted">
+                <Link
+                  key={l.to}
+                  to={l.to}
+                  onClick={handleMobileNav}          // ← closes Sheet on click
+                  className="flex items-center gap-3 rounded-md px-3 py-2 hover:bg-muted"
+                >
                   <l.icon className="h-4 w-4" /> {l.label}
                 </Link>
               ))}
-              <Link to="/seller/register" className="mt-2 flex items-center gap-3 rounded-md gradient-hero px-3 py-2 text-primary-foreground">
+              <Link
+                to="/seller/register"
+                onClick={handleMobileNav}            // ← closes Sheet on click
+                className="mt-2 flex items-center gap-3 rounded-md gradient-hero px-3 py-2 text-primary-foreground"
+              >
                 <Store className="h-4 w-4" /> Become a Seller
               </Link>
             </div>
@@ -73,7 +91,11 @@ export function Navbar() {
           {navLinks.map((l) => {
             const active = path.startsWith(l.to);
             return (
-              <Link key={l.to} to={l.to} className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${active ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}>
+              <Link
+                key={l.to}
+                to={l.to}
+                className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${active ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}
+              >
                 {l.label}
               </Link>
             );
@@ -82,7 +104,9 @@ export function Navbar() {
 
         <div className="ml-auto flex items-center gap-1">
           <Link to="/seller/register" className="hidden lg:block">
-            <Button variant="outline" size="sm" className="gap-1.5"><Store className="h-4 w-4" />Become Seller</Button>
+            <Button variant="outline" size="sm" className="gap-1.5">
+              <Store className="h-4 w-4" />Become Seller
+            </Button>
           </Link>
 
           <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
@@ -94,7 +118,13 @@ export function Navbar() {
               <Button variant="ghost" size="icon" className="relative" onClick={() => setTimeout(markAllRead, 800)}>
                 <Bell className="h-5 w-5" />
                 {unread > 0 && (
-                  <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">{unread}</motion.span>
+                  <motion.span
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground"
+                  >
+                    {unread}
+                  </motion.span>
                 )}
               </Button>
             </PopoverTrigger>
@@ -139,7 +169,9 @@ export function Navbar() {
               <DropdownMenuItem asChild><Link to="/seller">Seller Panel</Link></DropdownMenuItem>
               <DropdownMenuItem asChild><Link to="/admin">Admin Panel</Link></DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild><Link to="/login"><LogIn className="mr-2 h-4 w-4" />Login / Register</Link></DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/login"><LogIn className="mr-2 h-4 w-4" />Login / Register</Link>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
